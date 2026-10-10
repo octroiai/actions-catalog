@@ -1,0 +1,33 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: db.kill-long-queries
+  owner: Data & Backup Team
+  description: Terminates warehouse queries active for more than five minutes.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    additionalProperties: true
+  tags:
+  - postgres
+  concurrency:
+    lock: warehouse-maintenance
+  timeout: PT5M
+  approval:
+    minimum: human
+  environments:
+    protected: allow-with-change-ref
+implementation:
+  executor: container
+  image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+  command:
+  - psql
+  args:
+  - -h
+  - dwh.internal
+  - -c
+  - SELECT pg_terminate_backend(pid) FROM pg_stat_activity WHERE state='active' AND query_start < now() - interval '5 minutes'

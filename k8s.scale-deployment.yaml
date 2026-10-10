@@ -1,0 +1,34 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: k8s.scale-deployment
+  owner: Platform Team
+  description: Sets a deployment's replica count.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      deployment:
+        type: string
+      replicas:
+        type: integer
+    required:
+    - deployment
+    - replicas
+    additionalProperties: true
+  tags:
+  - kubernetes
+  timeout: PT10M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: bitnamilegacy/kubectl:1.30@sha256:1249fc292e84a38575ee0cadc3e28dcd7ddf5a3a4e5da401b1a8599e8ac52a1b
+  args:
+  - scale
+  - deployment/{{ inputs.deployment }}
+  - --replicas={{ inputs.replicas }}

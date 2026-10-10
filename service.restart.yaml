@@ -1,0 +1,41 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: service.restart
+  owner: Platform Team
+  description: Restarts a systemd service on the given hosts.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      hosts:
+        type: array
+        items:
+          type: string
+        minItems: 1
+      service:
+        type: string
+    required:
+    - hosts
+    - service
+    additionalProperties: true
+  tags:
+  - linux
+  timeout: PT5M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: alpine/ansible:2.18.6@sha256:4044a1d6d33bc00e9b198eca3de61d8f8c431da5a2294deccae579674830d10d
+  command:
+  - ansible-playbook
+  args:
+  - -i
+  - '{{ inputs.hosts | join('','') }},'
+  - restart-service.yml
+  - -e
+  - service={{ inputs.service }}

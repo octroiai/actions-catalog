@@ -1,0 +1,30 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: cache.flush-redis
+  owner: Platform Team
+  description: Flushes the shared Redis cache; it refills from the source of truth.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    additionalProperties: true
+  tags:
+  - redis
+  timeout: PT3M
+  approval:
+    minimum: human
+  environments:
+    protected: deny
+implementation:
+  executor: container
+  image: redis:7-alpine@sha256:858f009f9709ce576febc734aa78b8f6d624b82571f9ddb6bda4377c833b3499
+  command:
+  - redis-cli
+  args:
+  - -h
+  - cache.internal
+  - FLUSHALL

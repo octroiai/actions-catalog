@@ -1,0 +1,43 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: db.adhoc-query
+  owner: Data & Backup Team
+  description: Reads a bounded sample of rows from an allow-listed warehouse table.
+contract:
+  risk: readonly
+  reversal:
+    kind: none
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      table:
+        type: string
+        enum:
+        - dim_customers
+        - fact_events
+        - orders
+      limit:
+        type: integer
+        minimum: 1
+        maximum: 1000
+    required:
+    - table
+    - limit
+    additionalProperties: false
+  tags:
+  - postgres
+  timeout: PT5M
+  approval:
+    minimum: automatic
+implementation:
+  executor: container
+  image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+  command:
+  - psql
+  args:
+  - -h
+  - dwh.internal
+  - -c
+  - SELECT * FROM {{ inputs.table }} LIMIT {{ inputs.limit }}

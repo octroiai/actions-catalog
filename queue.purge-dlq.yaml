@@ -1,0 +1,32 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: queue.purge-dlq
+  owner: Platform Team
+  description: Empties a queue's dead-letter queue.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      queue:
+        type: string
+    required:
+    - queue
+    additionalProperties: true
+  timeout: PT5M
+  approval:
+    minimum: human
+  environments:
+    protected: deny
+implementation:
+  executor: container
+  image: curlimages/curl:8.9.1@sha256:8addc281f0ea517409209f76832b6ddc2cabc3264feb1ebbec2a2521ffad24e4
+  args:
+  - -sf
+  - -X
+  - DELETE
+  - https://broker.internal/queues/{{ inputs.queue }}/dlq

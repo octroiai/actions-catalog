@@ -1,0 +1,31 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: k8s.restart-pod
+  owner: Platform Team
+  description: Deletes one pod so its controller recreates it.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      pod:
+        type: string
+    required:
+    - pod
+    additionalProperties: true
+  tags:
+  - kubernetes
+  timeout: PT5M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: bitnamilegacy/kubectl:1.30@sha256:1249fc292e84a38575ee0cadc3e28dcd7ddf5a3a4e5da401b1a8599e8ac52a1b
+  args:
+  - delete
+  - pod
+  - '{{ inputs.pod }}'

@@ -1,0 +1,30 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: feature.toggle
+  owner: Platform Team
+  description: Flips a feature flag.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      flag:
+        type: string
+    required:
+    - flag
+    additionalProperties: true
+  timeout: PT1M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: curlimages/curl:8.9.1@sha256:8addc281f0ea517409209f76832b6ddc2cabc3264feb1ebbec2a2521ffad24e4
+  args:
+  - -sf
+  - -X
+  - PUT
+  - https://flags.internal/flags/{{ inputs.flag }}

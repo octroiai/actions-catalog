@@ -1,0 +1,31 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: k8s.rollout-restart
+  owner: Platform Team
+  description: Restarts a deployment's pods one by one.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      deployment:
+        type: string
+    required:
+    - deployment
+    additionalProperties: true
+  tags:
+  - kubernetes
+  timeout: PT15M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: bitnamilegacy/kubectl:1.30@sha256:1249fc292e84a38575ee0cadc3e28dcd7ddf5a3a4e5da401b1a8599e8ac52a1b
+  args:
+  - rollout
+  - restart
+  - deployment/{{ inputs.deployment }}

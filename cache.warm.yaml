@@ -1,0 +1,27 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: cache.warm
+  owner: Platform Team
+  description: Pre-loads the hot keys of a cache after a deploy or a flush.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    additionalProperties: true
+  tags:
+  - redis
+  timeout: PT8M
+  approval:
+    minimum: automatic
+implementation:
+  executor: container
+  image: curlimages/curl:8.9.1@sha256:8addc281f0ea517409209f76832b6ddc2cabc3264feb1ebbec2a2521ffad24e4
+  args:
+  - -sf
+  - -X
+  - POST
+  - https://cache.internal/warm

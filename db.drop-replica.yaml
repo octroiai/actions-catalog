@@ -1,0 +1,33 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: db.drop-replica
+  owner: Data & Backup Team
+  description: Stops and removes a warehouse read replica; it is rebuilt from scratch.
+contract:
+  risk: destructive
+  reversal:
+    kind: none
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      replica:
+        type: string
+    required:
+    - replica
+    additionalProperties: true
+  tags:
+  - postgres
+  timeout: PT20M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: alpine/ansible:2.18.6@sha256:4044a1d6d33bc00e9b198eca3de61d8f8c431da5a2294deccae579674830d10d
+  command:
+  - ansible-playbook
+  args:
+  - -i
+  - '{{ inputs.replica }},'
+  - stop-replica.yml

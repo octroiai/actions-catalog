@@ -1,0 +1,29 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: net.rotate-certs-v2
+  owner: Platform Team
+  description: 'Renews a TLS certificate with the internal certbot build (invalid on purpose: its image is a private tag, not pinned to a digest).'
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      cert:
+        type: string
+    required:
+    - cert
+    additionalProperties: true
+  timeout: PT10M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: registry.internal/ops/certbot:v2.12.0
+  args:
+  - renew
+  - --cert-name
+  - '{{ inputs.cert }}'

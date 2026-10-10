@@ -1,0 +1,25 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: readonly.collect-logs
+  owner: Platform Team
+  description: Exports recent logs of the service for an investigation.
+contract:
+  risk: readonly
+  reversal:
+    kind: none
+  idempotent: true
+  inputs:
+    type: object
+    additionalProperties: true
+  tags:
+  - observability
+  timeout: PT4M
+  approval:
+    minimum: automatic
+implementation:
+  executor: container
+  image: curlimages/curl:8.9.1@sha256:8addc281f0ea517409209f76832b6ddc2cabc3264feb1ebbec2a2521ffad24e4
+  args:
+  - -sf
+  - https://observability.internal/api/logs/export

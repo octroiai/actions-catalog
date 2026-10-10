@@ -1,0 +1,36 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: backup.restore
+  owner: Data & Backup Team
+  description: Restores a database from a snapshot, overwriting its current content.
+contract:
+  risk: destructive
+  reversal:
+    kind: none
+  idempotent: false
+  inputs:
+    type: object
+    properties:
+      database:
+        type: string
+      snapshot:
+        type: string
+    required:
+    - database
+    - snapshot
+    additionalProperties: true
+  tags:
+  - postgres
+  timeout: PT45M
+  approval:
+    minimum: two_person
+implementation:
+  executor: container
+  image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+  command:
+  - pg_restore
+  args:
+  - -d
+  - '{{ inputs.database }}'
+  - /backups/{{ inputs.snapshot }}

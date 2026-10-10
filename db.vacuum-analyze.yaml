@@ -1,0 +1,31 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: db.vacuum-analyze
+  owner: Data & Backup Team
+  description: Reclaims dead tuples and refreshes planner statistics.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    additionalProperties: true
+  tags:
+  - postgres
+  concurrency:
+    lock: warehouse-maintenance
+  timeout: PT30M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: postgres:16-alpine@sha256:721873c34ceb9f8d8fc265984940dc982404c105f19ad51be9fdc5970a6080ea
+  command:
+  - psql
+  args:
+  - -h
+  - dwh.internal
+  - -c
+  - VACUUM ANALYZE

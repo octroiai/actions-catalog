@@ -1,0 +1,35 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: disk.cleanup-docker
+  owner: Platform Team
+  description: Prunes dangling Docker images and build cache older than a cut-off.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      until:
+        type: string
+    required:
+    - until
+    additionalProperties: true
+  tags:
+  - linux
+  timeout: PT10M
+  approval:
+    minimum: automatic
+implementation:
+  executor: container
+  image: docker:27-cli@sha256:851f91d241214e7c6db86513b270d58776379aacc5eb9c4a87e5b47115e3065c
+  command:
+  - docker
+  args:
+  - system
+  - prune
+  - -af
+  - --filter
+  - until={{ inputs.until }}

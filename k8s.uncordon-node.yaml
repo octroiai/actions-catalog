@@ -1,0 +1,32 @@
+apiVersion: octroi.ai/v1
+kind: Action
+metadata:
+  slug: k8s.uncordon-node
+  owner: Platform Team
+  description: Makes a cordoned node schedulable again.
+contract:
+  risk: reversible
+  reversal:
+    kind: self-healing
+  idempotent: true
+  inputs:
+    type: object
+    properties:
+      node:
+        type: string
+    required:
+    - node
+    additionalProperties: true
+  tags:
+  - kubernetes
+  concurrency:
+    lock: node-eviction
+  timeout: PT2M
+  approval:
+    minimum: human
+implementation:
+  executor: container
+  image: bitnamilegacy/kubectl:1.30@sha256:1249fc292e84a38575ee0cadc3e28dcd7ddf5a3a4e5da401b1a8599e8ac52a1b
+  args:
+  - uncordon
+  - '{{ inputs.node }}'
